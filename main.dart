@@ -18,13 +18,10 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
 
-  final _nomeControlador = TextEditingController();
-  final _cpfControlador = TextEditingController();
-  final _valorControlador = TextEditingController();
   final _toDoController = TextEditingController();
-  
 
-  List _toDoList = [];
+  List _toDoList = [SegundaRota];
+  
 
   Map<String, dynamic> _lastRemoved;
   int _lastRemovedPos;
@@ -35,9 +32,7 @@ class _HomeState extends State<Home> {
 
     _readData().then((data) {
       setState(() {
-        //_toDoList = json.decode(data);
-        _nomeList = json.decode(data);
-        _valorList = json.decode(data);
+        _toDoList = json.decode(data);
       });
     });
   }
@@ -48,8 +43,7 @@ class _HomeState extends State<Home> {
       newToDo["title"] = _toDoController.text;
       _toDoController.text = "";
       newToDo["ok"] = false;
-      _nomeList.add(newToDo);
-      _valorList.add(newToDo);
+      _toDoList.add(newToDo);
 
       _saveData();
     });
@@ -59,20 +53,13 @@ class _HomeState extends State<Home> {
     await Future.delayed(Duration(seconds: 1));
 
     setState(() {
-      _nomeList.sort((a, b){
+      _toDoList.sort((a, b){
         if(a["ok"] && !b["ok"]) return 1;
         else if(!a["ok"] && b["ok"]) return -1;
         else return 0;
       });
-      _valorList.sort((a, b){
-        if(a["ok"] && !b["ok"]) return 1;
-        else if(!a["ok"] && b["ok"]) return -1;
-        else return 0;
-      });  
 
       _saveData();
-    
-    
     });
 
     return null;
@@ -82,7 +69,7 @@ class _HomeState extends State<Home> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Controle de emprestimo"),
+        title: Text("Lista de Tarefas"),
         backgroundColor: Colors.blueAccent,
         centerTitle: true,
       ),
@@ -92,38 +79,17 @@ class _HomeState extends State<Home> {
             padding: EdgeInsets.fromLTRB(17.0, 1.0, 7.0, 1.0),
             child: Row(
               children: <Widget>[
-                Expanded(
-                  child: TextField(
-                  focusNode: _nomeFocus,
-                  controller: _nomeControlador,
-                  keyboardType: TextInputType.text,
-                  decoration: InputDecoration(
-                      labelText: "Nome",
-                      labelStyle: TextStyle(color: Colors.black)),
-                  
-                  style: TextStyle(color: Colors.black, fontSize: 25.0),
-                ),
-                TextField(
-                  
-                  controller: _valorControlador,
-                  keyboardType: TextInputType.number,
-                  decoration: InputDecoration(
-                      labelText: "Valor",
-                      labelStyle: TextStyle(color: Colors.black)),
-                  
-                  style: TextStyle(color: Colors.black, fontSize: 25.0),
-                ),
-                    decoration: InputDecoration(
-                        labelText: "Novo Cliente",
-                        labelStyle: TextStyle(color: Colors.blueAccent)
-                    ),
-                  )
-                ),
+                
                 RaisedButton(
                   color: Colors.blueAccent,
-                  child: Text("+"),
+                  child: Text("ADD"),
                   textColor: Colors.white,
-                  onPressed: _addToDo,
+                  onPressed: () {
+            		  Navigator.push(
+              		  context,
+	                  MaterialPageRoute(builder: (context) => SegundaRota()),
+            		  );
+          	     },
                 )
               ],
             ),
@@ -215,3 +181,61 @@ class _HomeState extends State<Home> {
   }
 
 }
+
+class SegundaRota extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text("Segunda Rota (tela)"),
+      ),
+
+      body: Column(
+        children: <Widget>[
+          Container(
+            padding: EdgeInsets.fromLTRB(17.0, 1.0, 7.0, 1.0),
+            child: Row(
+              children: <Widget>[
+                Expanded(
+                  child: TextField(
+                    controller: _toDoController,
+                    decoration: InputDecoration(
+                        labelText: "Nova Tarefa",
+                        labelStyle: TextStyle(color: Colors.blueAccent)
+                    ),
+                  )
+                ),
+                RaisedButton(
+                  color: Colors.blueAccent,
+                  child: Text("ADD"),
+                  textColor: Colors.white,
+                  onPressed: _addToDo,
+                )
+              ],
+            ),
+          ),
+          Expanded(
+            child: RefreshIndicator(onRefresh: _refresh,
+              child: ListView.builder(
+                  padding: EdgeInsets.only(top: 10.0),
+                  itemCount: _toDoList.length,
+                  itemBuilder: buildItem),),
+          )
+        ],
+      ),  
+
+      body: Center(       child: RaisedButton(
+          onPressed: () { 
+            Navigator.pop(context);
+          },
+          child: Text('Retornar !'),
+        ),
+      ),
+    );
+  
+  }
+
+
+
+}
+
